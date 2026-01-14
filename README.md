@@ -4,7 +4,7 @@
 
 Transform your CV into an ATS-optimized, job-tailored document with the precision of LaTeX and the intelligence of AI.
 
-![CVForge AI Screenshot](./public/screenshot.png)
+![CVForge AI Screenshot](./public/header-image.png)
 
 ## ✨ Features
 
@@ -315,6 +315,12 @@ npm run build
 npm start
 ```
 
+## ✨ Output
+
+![CVForge AI Screenshot](./public/result-image.png)
+
+![CVForge AI Screenshot](./public/editor-image.png)
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
@@ -324,10 +330,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
-
-## 📝 License
-
-This project is open source and available under the [MIT License](LICENSE).
 
 ## 🙏 Acknowledgments
 
@@ -342,4 +344,4 @@ If you encounter any issues or have questions, please open an issue on GitHub.
 
 ---
 
-Made with ❤️ by the CVForge AI team
+Made with ❤️ by the Abdul Haseeb
