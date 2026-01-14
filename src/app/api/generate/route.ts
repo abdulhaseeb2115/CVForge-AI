@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { generateLatex } from "@/utils";
 import { GenerateBody, Provider } from "@/types";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { DEFAULT_CV, getSystemPrompt } from "../../../../config";
+import { getSystemPrompt } from "../../../../config";
 
 export const runtime = "nodejs";
 
@@ -13,10 +13,10 @@ export async function POST(req: Request) {
 		console.log("[generate] Request received");
 		const body = (await req.json()) as Partial<GenerateBody>;
 
-		if (!body || !body.jd || !body.provider) {
-			console.warn("[generate] Missing jd or provider in body");
+		if (!body || !body.jd || !body.provider || !body.cv) {
+			console.warn("[generate] Missing jd, provider, or cv in body");
 			return NextResponse.json(
-				{ error: "Missing 'jd' or 'provider' in request body" },
+				{ error: "Missing 'jd', 'provider', or 'cv' in request body" },
 				{ status: 400 }
 			);
 		}
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
 
 		const user = [
 			"Here is the base CV data:",
-			JSON.stringify(DEFAULT_CV, null, 2),
+			JSON.stringify(body.cv, null, 2),
 			"",
 			"Here is the target job description:",
 			body.jd,

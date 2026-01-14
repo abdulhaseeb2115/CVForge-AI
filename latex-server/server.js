@@ -96,6 +96,17 @@ app.post("/compile", async (req, res) => {
 	}
 });
 
+app.get("/health", async (req, res) => {
+	try {
+		console.log("[latex-server] /health called");
+		return res.status(200).json({ message: "OK" });
+	} catch (err) {
+		const message = err instanceof Error ? err.message : "Unknown error";
+		console.error("[latex-server] Error:", message);
+		return res.status(500).json({ error: message });
+	}
+});
+
 const port = process.env.PORT || 8080;
 app.listen(port, () => {
 	console.log(`LaTeX compile server listening on :${port}`);

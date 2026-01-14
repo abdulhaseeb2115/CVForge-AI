@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "My CV Builder",
-	description: "AI Powered CV builder",
+	title: "CVForge AI - Precision-tailored resumes, powered by AI and LaTeX",
+	description: "Precision-tailored resumes, powered by AI and LaTeX",
 };
 
 export default function RootLayout({

@@ -54,6 +54,7 @@ export interface CV {
 export type Provider = "openai" | "claude" | "gemini";
 
 export type GenerateBody = {
+	cv: CV;
 	jd: string;
 	provider?: Provider;
 	allowBold?: boolean;

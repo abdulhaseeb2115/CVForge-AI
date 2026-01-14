@@ -22,7 +22,10 @@ export default function Home() {
 	const [loading, setLoading] = useState<boolean>(false);
 	const [compiling, setCompiling] = useState<boolean>(false);
 	const [error, setError] = useState<string>("");
+	const [showLatexEditor, setShowLatexEditor] = useState<boolean>(false);
 	const compileTimer = useRef<number | null>(null);
+	const heroRef = useRef<HTMLDivElement>(null);
+	const inputRef = useRef<HTMLDivElement>(null);
 
 	const safeParse = useCallback((text: string): CV | null => {
 		try {
@@ -51,6 +54,7 @@ export default function Home() {
 			}
 
 			const body: GenerateBody = {
+				cv,
 				jd,
 				allowBold,
 				provider,
@@ -136,6 +140,10 @@ export default function Home() {
 		console.log("[ui] Download clicked");
 	}, [pdfUrl]);
 
+	const scrollToInput = () => {
+		inputRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+	};
+
 	useEffect(() => {
 		console.log("[ui] Effect: compile on latex change");
 		if (latex && !latex.includes("Click 'Generate ATS-Optimized CV'")) {
@@ -153,155 +161,279 @@ export default function Home() {
 	}, []);
 
 	return (
-		<div className="min-h-screen grid grid-cols-1 lg:grid-cols-4 gap-4 p-4 sm:p-6 text-gray-800">
-			<section className="flex flex-col gap-3 border rounded-md p-3 bg-white">
-				<h2 className="font-semibold">Data Input</h2>
-				<label className="text-sm font-medium">CV JSON</label>
-				<textarea
-					className="border rounded p-2 font-mono text-sm h-48"
-					spellCheck={false}
-					value={cvJson}
-					onChange={(e) => setCvJson(e.target.value)}
-				/>
+		<div className="min-h-screen flex flex-col bg-[#f8f9fa]">
+			{/* Subtle background gradient animation */}
+			<div className="fixed inset-0 -z-10 animate-gradient bg-gradient-to-br from-[#f8f9fa] via-[#ffffff] to-[#f0f4f8]" />
 
-				<label className="text-sm font-medium">Job Description</label>
-				<textarea
-					className="border rounded p-2 text-sm h-48"
-					value={jd}
-					onChange={(e) => setJd(e.target.value)}
-				/>
-
-				<div className="flex items-center gap-4 py-1">
-					<span className="text-sm font-medium">Provider:</span>
-					<label className="text-sm flex items-center gap-1">
-						<input
-							type="radio"
-							name="provider"
-							value="openai"
-							checked={provider === "openai"}
-							onChange={() => setProvider("openai")}
-						/>
-						OpenAI
-					</label>
-					<label className="text-sm flex items-center gap-1">
-						<input
-							type="radio"
-							name="provider"
-							value="claude"
-							checked={provider === "claude"}
-							onChange={() => setProvider("claude")}
-						/>
-						Claude
-					</label>
-					<label className="text-sm flex items-center gap-1">
-						<input
-							type="radio"
-							name="provider"
-							value="gemini"
-							checked={provider === "gemini"}
-							onChange={() => setProvider("gemini")}
-						/>
-						Gemini
-					</label>
-				</div>
-
-				<div className="flex items-center gap-4 py-1">
-					<label className="text-sm flex items-center gap-1">
-						Bold Keywords&nbsp;
-						<input
-							type="checkbox"
-							name="allowBold"
-							checked={allowBold}
-							onChange={() => setAllowBold((prev) => !prev)}
-						/>
-					</label>
-				</div>
-
-				<div className="flex gap-2 mt-5">
-					<button
-						className="px-3 py-2 rounded bg-black text-white text-sm disabled:opacity-60 hover:scale-[98%]"
-						onClick={generate}
-						disabled={loading}
+			{/* Hero Section */}
+			<section
+				ref={heroRef}
+				className="relative py-20 px-4 sm:px-6 lg:px-8 overflow-hidden"
+			>
+				<div className="max-w-4xl mx-auto text-center">
+					<h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-4 animate-fade-in-up">
+						<span className="bg-gradient-to-r from-[#1a1f3a] to-[#2d3748] bg-clip-text text-transparent">
+							CVForge AI
+						</span>
+					</h1>
+					<p
+						className="text-lg sm:text-xl text-[#64748b] mb-2 animate-fade-in-up opacity-0"
+						style={{ animationDelay: "0.2s", animationFillMode: "forwards" }}
 					>
-						{loading ? "Generating..." : "Generate CV"}
+						Precision-tailored resumes, powered by AI and LaTeX.
+					</p>
+					<p
+						className="text-base text-[#64748b] mb-8 max-w-2xl mx-auto animate-fade-in-up opacity-0"
+						style={{ animationDelay: "0.4s", animationFillMode: "forwards" }}
+					>
+						Transform your CV into an ATS-optimized, job-tailored document with
+						the precision of LaTeX and the intelligence of AI.
+					</p>
+					<button
+						onClick={scrollToInput}
+						className="px-8 py-3 bg-gradient-to-r from-[#1a1f3a] to-[#2d3748] text-white rounded-lg font-medium hover:from-[#141829] hover:to-[#1a1f3a] transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 animate-fade-in-up opacity-0"
+						style={{ animationDelay: "0.6s", animationFillMode: "forwards" }}
+					>
+						Start Optimizing
 					</button>
 				</div>
-				{error && <p className="text-red-600 text-sm">Error: {error}</p>}
 			</section>
 
-			<section className="flex flex-col border rounded-md overflow-hidden bg-white">
-				<div className="flex items-center justify-between p-2 border-b">
-					<h2 className="font-semibold">LaTeX Editor</h2>
-					<div className="text-xs text-gray-500">
-						{compiling ? "Compiling..." : ""}
-					</div>
-				</div>
-				<div className="flex-1 min-h-[400px]">
-					<MonacoEditor
-						height="100%"
-						defaultLanguage="latex"
-						theme="vs-light"
-						value={latex}
-						onChange={(v) => setLatex(v ?? "")}
-						options={{
-							fontSize: 11,
-							minimap: { enabled: false },
-							wordWrap: "on",
-							scrollBeyondLastLine: false,
-							automaticLayout: true,
-						}}
-						onMount={(editor, monaco) => {
-							const langs = (monaco.languages as any).getLanguages?.() ?? [];
-							if (!langs.some((l: any) => l.id === "latex")) {
-								monaco.languages.register({ id: "latex" });
-							}
-							(monaco.languages as any).setMonarchTokensProvider("latex", {
-								tokenizer: {
-									root: [
-										[/\\\\[a-zA-Z@]+\*?/, "keyword"],
-										[/%.*/, "comment"],
-										[/\{[^}]*\}/, "string"],
-									],
-								},
-							});
-						}}
-					/>
-				</div>
-			</section>
+			{/* Input Section */}
+			<section ref={inputRef} className="py-12 px-4 sm:px-6 lg:px-8">
+				<div className="max-w-7xl mx-auto">
+					<h2 className="text-3xl font-bold text-[#1a1f3a] mb-8 text-center">
+						Provide Your Inputs
+					</h2>
 
-			<section className="flex flex-col border rounded-md overflow-hidden bg-white col-span-2">
-				<div className="flex items-center justify-between p-2 border-b">
-					<h2 className="font-semibold">Preview</h2>
-					<div className="flex items-center gap-2">
-						<button
-							className="px-3 py-1 rounded border text-sm"
-							onClick={() => compile(latex)}
-						>
-							Recompile
-						</button>
-						<button
-							className="px-3 py-1 rounded bg-black text-white text-sm disabled:opacity-60"
-							onClick={downloadPdf}
-							disabled={!pdfUrl}
-						>
-							Download PDF
-						</button>
-					</div>
-				</div>
-				<div className="flex-1 min-h-[400px] bg-gray-50">
-					{pdfUrl ? (
-						<iframe
-							title="PDF Preview"
-							src={pdfUrl}
-							className="w-full h-full"
-						/>
-					) : (
-						<div className="p-4 text-sm text-gray-600">
-							PDF will appear here after compile.
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+						{/* Left: CV JSON Editor */}
+						<div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-200">
+							<label className="block text-sm font-semibold text-[#1a1f3a] mb-3">
+								Profile JSON
+							</label>
+							<textarea
+								className="w-full border border-gray-200 rounded-lg p-4 font-mono text-sm h-80 focus:outline-none focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent transition-all duration-200 resize-none"
+								spellCheck={false}
+								value={cvJson}
+								onChange={(e) => setCvJson(e.target.value)}
+								placeholder="Enter your CV JSON here..."
+							/>
 						</div>
-					)}
+
+						{/* Right: Job Description */}
+						<div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-200">
+							<label className="block text-sm font-semibold text-[#1a1f3a] mb-3">
+								Job Description
+							</label>
+							<textarea
+								className="w-full border border-gray-200 rounded-lg p-4 text-sm h-80 focus:outline-none focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent transition-all duration-200 resize-none"
+								value={jd}
+								onChange={(e) => setJd(e.target.value)}
+								placeholder="Paste the job description here..."
+							/>
+						</div>
+					</div>
+
+					{/* Settings and Generate Button */}
+					<div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+						<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+							<div className="flex flex-col sm:flex-row sm:items-center gap-4">
+								<div className="flex items-center gap-4">
+									<span className="text-sm font-medium text-[#1a1f3a]">
+										LLM Provider:
+									</span>
+									<div className="flex items-center gap-3">
+										<label className="text-sm flex items-center gap-2 cursor-pointer">
+											<input
+												type="radio"
+												name="provider"
+												value="openai"
+												checked={provider === "openai"}
+												onChange={() => setProvider("openai")}
+												className="w-4 h-4 text-[#06b6d4] focus:ring-[#06b6d4]"
+											/>
+											<span className="text-[#64748b]">OpenAI</span>
+										</label>
+										<label className="text-sm flex items-center gap-2 cursor-pointer">
+											<input
+												type="radio"
+												name="provider"
+												value="claude"
+												checked={provider === "claude"}
+												onChange={() => setProvider("claude")}
+												className="w-4 h-4 text-[#06b6d4] focus:ring-[#06b6d4]"
+											/>
+											<span className="text-[#64748b]">Claude</span>
+										</label>
+										<label className="text-sm flex items-center gap-2 cursor-pointer">
+											<input
+												type="radio"
+												name="provider"
+												value="gemini"
+												checked={provider === "gemini"}
+												onChange={() => setProvider("gemini")}
+												className="w-4 h-4 text-[#06b6d4] focus:ring-[#06b6d4]"
+											/>
+											<span className="text-[#64748b]">Gemini</span>
+										</label>
+									</div>
+								</div>
+
+								<div className="flex items-center gap-2">
+									<label className="text-sm flex items-center gap-2 cursor-pointer">
+										<input
+											type="checkbox"
+											name="allowBold"
+											checked={allowBold}
+											onChange={() => setAllowBold((prev) => !prev)}
+											className="w-4 h-4 text-[#06b6d4] rounded focus:ring-[#06b6d4]"
+										/>
+										<span className="text-[#64748b] font-medium">
+											Keyword Highlight
+										</span>
+									</label>
+								</div>
+							</div>
+
+							<button
+								onClick={generate}
+								disabled={loading}
+								className="px-6 py-2.5 bg-gradient-to-r from-[#1a1f3a] to-[#2d3748] text-white rounded-lg font-medium hover:from-[#141829] hover:to-[#1a1f3a] transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-md"
+							>
+								{loading ? "Generating..." : "Generate ATS-Optimized CV"}
+							</button>
+						</div>
+						{error && (
+							<div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+								<p className="text-red-600 text-sm">Error: {error}</p>
+							</div>
+						)}
+					</div>
 				</div>
 			</section>
+
+			{/* Output Section */}
+			<section className="py-12 px-4 sm:px-6 lg:px-8 flex-1">
+				<div className="max-w-7xl mx-auto">
+					<h2 className="text-3xl font-bold text-[#1a1f3a] mb-8 text-center">
+						Optimized CV Preview
+					</h2>
+
+					<div className="bg-white rounded-xl shadow-xl p-6 border border-gray-100">
+						<div className="flex items-center justify-between mb-4">
+							<div className="text-sm text-[#64748b]">
+								{compiling && "Compiling PDF..."}
+							</div>
+							<div className="flex items-center gap-3">
+								<button
+									onClick={() => compile(latex)}
+									className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-[#64748b] hover:bg-gray-50 transition-colors duration-200"
+								>
+									Recompile
+								</button>
+								<button
+									onClick={downloadPdf}
+									disabled={!pdfUrl}
+									className="px-4 py-2 bg-gradient-to-r from-[#1a1f3a] to-[#2d3748] text-white rounded-lg text-sm font-medium hover:from-[#141829] hover:to-[#1a1f3a] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+								>
+									Download PDF
+								</button>
+								<button
+									onClick={() => setShowLatexEditor(!showLatexEditor)}
+									className="px-4 py-2 text-sm text-[#64748b] hover:text-[#1a1f3a] transition-colors duration-200"
+								>
+									{showLatexEditor ? "Hide" : "Show"} LaTeX Editor
+								</button>
+							</div>
+						</div>
+
+						{showLatexEditor && (
+							<div className="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+								<div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+									<h3 className="text-sm font-semibold text-[#1a1f3a]">
+										LaTeX Editor
+									</h3>
+								</div>
+								<div className="h-96">
+									<MonacoEditor
+										height="100%"
+										defaultLanguage="latex"
+										theme="vs-light"
+										value={latex}
+										onChange={(v) => setLatex(v ?? "")}
+										options={{
+											fontSize: 11,
+											minimap: { enabled: false },
+											wordWrap: "on",
+											scrollBeyondLastLine: false,
+											automaticLayout: true,
+										}}
+										onMount={(editor, monaco) => {
+											const langs =
+												(monaco.languages as any).getLanguages?.() ?? [];
+											if (!langs.some((l: any) => l.id === "latex")) {
+												monaco.languages.register({ id: "latex" });
+											}
+											(monaco.languages as any).setMonarchTokensProvider(
+												"latex",
+												{
+													tokenizer: {
+														root: [
+															[/\\\\[a-zA-Z@]+\*?/, "keyword"],
+															[/%.*/, "comment"],
+															[/\{[^}]*\}/, "string"],
+														],
+													},
+												}
+											);
+										}}
+									/>
+								</div>
+							</div>
+						)}
+
+						<div className="bg-gray-50 rounded-lg min-h-[600px] border border-gray-200 overflow-hidden">
+							{pdfUrl ? (
+								<iframe
+									title="PDF Preview"
+									src={pdfUrl}
+									className="w-full h-full min-h-[600px] border-0"
+								/>
+							) : (
+								<div className="flex items-center justify-center h-full min-h-[600px]">
+									<div className="text-center">
+										<p className="text-[#64748b] text-sm mb-2">
+											{compiling
+												? "Compiling your CV..."
+												: "PDF will appear here after generation"}
+										</p>
+										{compiling && (
+											<div className="flex justify-center mt-4">
+												<div className="w-8 h-8 border-4 border-[#06b6d4] border-t-transparent rounded-full animate-spin"></div>
+											</div>
+										)}
+									</div>
+								</div>
+							)}
+						</div>
+					</div>
+				</div>
+			</section>
+
+			{/* Footer Section */}
+			<footer className="bg-[#1a1f3a] text-white py-12 px-4 sm:px-6 lg:px-8 mt-auto">
+				<div className="max-w-4xl mx-auto text-center">
+					<h3 className="text-2xl font-bold mb-4">CVForge AI</h3>
+					<p className="text-gray-300 mb-2 max-w-2xl mx-auto">
+						CVForge AI helps developers and professionals generate ATS-friendly,
+						job-optimized resumes using AI and LaTeX precision.
+					</p>
+					<p className="text-gray-400 text-sm mt-6">
+						© {new Date().getFullYear()} CVForge AI. All rights reserved.
+					</p>
+				</div>
+			</footer>
 		</div>
 	);
 }
